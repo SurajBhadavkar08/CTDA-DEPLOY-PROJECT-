@@ -11,9 +11,8 @@ services:
     rootDir: backend
 
   # Frontend static React site
-  - type: web
+  - type: static
     name: ctda-frontend
-    env: static
     buildCommand: npm run build
     publishPath: dist
     envVars:
