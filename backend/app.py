@@ -90,9 +90,14 @@ def upload_file():
         return jsonify({"error": "No selected file"}), 400
 
     if file and file.filename.endswith(".txt"):
-        data = file.read().decode("utf-8")      # Read file contents
-        data_store.df, data_store.user_list = preprocess(data)  # Update our shared data after processing and converting into dataframe
-        return jsonify({"users": data_store.user_list})        # Return the list of users
+        try:
+            data = file.read().decode("utf-8")      # Read file contents
+            data_store.df, data_store.user_list = preprocess(data)  # Update our shared data after processing and converting into dataframe
+            return jsonify({"users": data_store.user_list})        # Return the list of users
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return jsonify({"error": str(e)}), 400
 
     return jsonify({"error": "Invalid file type"}), 400
     

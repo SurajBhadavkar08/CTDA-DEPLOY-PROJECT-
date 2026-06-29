@@ -8,23 +8,31 @@ def preprocess(data):
     # (?:\s?[APap][Mm])? to optionally match AM/PM.
     # Anchor to the start of a line using '^' and enable multiline mode ... re.MULTILINE is a flag that changes how the ^ (caret) and $ (dollar) anchors behave.
     # the pattern will only match if the date is at the start of a line.
-    date_regex = r'^(?:\d{1,2}/\d{1,2}/\d{1,2},\s\d{1,2}:\d{2}(?:\s?[APap][Mm])?)'
-    dates = re.findall(date_regex, data, flags=re.MULTILINE)
+    # Robust regex pattern matching date and time at the start of any line, supporting both Android and iOS exports
+    header_regex = r'^\[?(\d{1,4}[/\.\-]\d{1,2}[/\.\-]\d{2,4}),?\s(\d{1,2}:\d{2}(?::\d{2})?(?:\s?[APap][Mm])?)\]?(?:\s-\s|\s|:\s)?'
+    
+    matches = list(re.finditer(header_regex, data, flags=re.MULTILINE))
+    if not matches:
+        raise ValueError("No valid WhatsApp chat messages with date/time stamps were found. Please ensure you are uploading a valid exported WhatsApp chat .txt file.")
+        
+    dates = []
+    user_messages = []
+    
+    for i in range(len(matches)):
+        start_idx = matches[i].end()
+        end_idx = matches[i+1].start() if i + 1 < len(matches) else len(data)
+        
+        date_part, time_part = matches[i].groups()
+        dates.append(f"{date_part}, {time_part}")
+        user_messages.append(data[start_idx:end_idx].strip())
+        
+    df = pd.DataFrame({'user_message': user_messages, 'date': dates})
 
-    # user_message_regex similarly to include the optional AM/PM part, and the '-' separator after the date and time.
-    user_message_regex = r'^(?:\d{1,2}/\d{1,2}/\d{1,2},\s\d{1,2}:\d{2}(?:\s?[APap][Mm])?\s-\s)'
-    user_messages = re.split(user_message_regex, data, flags=re.MULTILINE)[1:]  # Skip the first empty element
-    df = pd.DataFrame({'user_message':user_messages,'date':dates})
-       
-    # Check the first date string to decide the datetime format
-    sample_date = df['date'].iloc[0].lower()
-    if "am" in sample_date or "pm" in sample_date:  #If AM/PM is found, the format '%d/%m/%y, %I:%M %p' (12‑hour clock) is used.
-        date_format = '%d/%m/%y, %I:%M %p'
-    else:
-        date_format = '%d/%m/%y, %H:%M' # else '%d/%m/%y, %H:%M' for 24‑hour clock.
-
-    # Convert the entire 'date' column using the determined format
-    df['date'] = pd.to_datetime(df['date'], format=date_format)
+    # Convert the 'date' column using pandas automatic mixed format parsing
+    try:
+        df['date'] = pd.to_datetime(df['date'], dayfirst=True)
+    except Exception:
+        df['date'] = pd.to_datetime(df['date'])
 
     # handling sensetive information
     aadhaar_regex = re.compile(r'(?<!\d)(?![01])[2-9]\d{3}\s\d{4}\s\d{4}(?!\d)')
