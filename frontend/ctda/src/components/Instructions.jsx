@@ -1,9 +1,9 @@
 import React from 'react';
-import instruction1 from "../assets/instruction1.png"
-import instruction2 from "../assets/instruction2.png"
-import instruction3 from "../assets/instruction3.png"
-import instruction4 from "../assets/instruction4.png"
-import instruction5 from "../assets/instruction5.png"
+import instruction1 from "../assets/Instruction1.png"
+import instruction2 from "../assets/Instruction2.png"
+import instruction3 from "../assets/Instruction3.png"
+import instruction4 from "../assets/Instruction4.png"
+import instruction5 from "../assets/Instruction5.png"
 
 const steps = [
   {
