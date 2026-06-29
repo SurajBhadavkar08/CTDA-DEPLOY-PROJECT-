@@ -1,0 +1,14 @@
+flask
+flask-cors
+matplotlib
+mpld3
+pandas
+plotly
+wordcloud
+numpy
+pillow
+nltk
+urlextract
+emoji
+requests
+gunicorn
