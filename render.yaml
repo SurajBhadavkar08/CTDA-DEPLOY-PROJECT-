@@ -11,10 +11,11 @@ services:
     rootDir: backend
 
   # Frontend static React site
-  - type: static
+  - type: web
     name: ctda-frontend
+    env: static
     buildCommand: npm run build
-    publishPath: dist
+    staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
         fromService:
